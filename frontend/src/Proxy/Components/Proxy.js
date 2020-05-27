@@ -8,17 +8,24 @@ class Proxy extends React.Component {
         this.state = {
             error: null,
             isLoaded: false,
-            items: []
+            items: [],
+            currentPage: 1,
+            itemsPerPage: 25
         };
+        this.handleClick = this.handleClick.bind(this);
+    }
+
+    handleClick(event) {
+        this.setState({
+            currentPage: Number(event.target.id)
+        });
     }
 
     componentDidMount() {
-        fetch("http://127.0.0.1:8000/proxies/")
+        fetch(`http://127.0.0.1:8000/proxies/`)
             .then(res => res.json())
             .then(
                 (result) => {
-                    console.log(result)
-
                     this.setState({
                         isLoaded: true,
                         items: result[0]
@@ -37,8 +44,14 @@ class Proxy extends React.Component {
     }
 
     renderTableData() {
-        return this.state.items.map((proxy, index) => {
-            const {id, provider, ip, port, country, country_code, createdAt, updatedAt} = proxy //destructuring
+        const {items, currentPage, itemsPerPage} = this.state;
+
+        const indexOfLastItem = currentPage * itemsPerPage;
+        const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+        const currentItems = items.slice(indexOfFirstItem, indexOfLastItem);
+
+        return currentItems.map((proxy, index) => {
+            const {id, provider, ip, port, country, country_code, createdAt, updatedAt} = proxy; //destructuring
             return (
                 <tr key={id}>
                     <td>{id}</td>
@@ -46,7 +59,6 @@ class Proxy extends React.Component {
                     <td>{country}</td>
                     <td>{country_code}</td>
                     <td>{createdAt}</td>
-
                     <td>{ip}</td>
                     <td>{port}</td>
                     <td>{updatedAt}</td>
@@ -62,7 +74,39 @@ class Proxy extends React.Component {
         })
     }
 
+    // renderNumbers() {
+    //     let number = Object.keys(this.state.items).map()
+    //     return number.map((key, index) => {
+    //         return (
+    //             <li
+    //                 key={number}
+    //                 id={number}
+    //                 onClick={this.handleClick}
+    //             >
+    //                 {number}
+    //             </li>
+    //         );
+    //     })
+    // }
+
     render() {
+        const pageNumbers = [];
+        for (let i = 1; i <= Math.ceil(this.state.items.length / this.state.itemsPerPage); i++) {
+            pageNumbers.push(i);
+        }
+
+        const renderPageNumbers = pageNumbers.map(number => {
+            return (
+                <li
+                    key={number}
+                    id={number}
+                    onClick={this.handleClick}
+                >
+                    {number}
+                </li>
+            );
+        });
+
         const {error, isLoaded} = this.state;
         if (error) {
             return <div>Error: {error.message}</div>;
@@ -77,7 +121,11 @@ class Proxy extends React.Component {
                         <tr>{this.renderTableHeader()}</tr>
                         {this.renderTableData()}
                         </tbody>
+
                     </table>
+                    <ul id="page-numbers">
+                        {renderPageNumbers}
+                    </ul>
                 </div>
             );
         }
