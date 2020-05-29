@@ -1,5 +1,4 @@
 import React from "react";
-import '../proxy.css'
 
 
 class Proxy extends React.Component {
@@ -10,16 +9,22 @@ class Proxy extends React.Component {
             isLoaded: false,
             items: [],
             currentPage: 1,
-            itemsPerPage: 25
+            itemsPerPage: 25,
+            activeIndex: null,
+            isBoxVisible: false
+
         };
         this.handleClick = this.handleClick.bind(this);
     }
 
     handleClick(event) {
         this.setState({
-            currentPage: Number(event.target.id)
+
+            activeIndex: event,
+            currentPage: event
         });
     }
+
 
     componentDidMount() {
         fetch(`http://127.0.0.1:8000/proxies/`)
@@ -68,45 +73,36 @@ class Proxy extends React.Component {
     }
 
     renderTableHeader() {
-        let header = Object.keys(this.state.items[0])
+        let header = Object.keys(this.state.items[0]);
         return header.map((key, index) => {
             return <th key={index}>{key.toUpperCase()}</th>
         })
     }
 
-    // renderNumbers() {
-    //     let number = Object.keys(this.state.items).map()
-    //     return number.map((key, index) => {
-    //         return (
-    //             <li
-    //                 key={number}
-    //                 id={number}
-    //                 onClick={this.handleClick}
-    //             >
-    //                 {number}
-    //             </li>
-    //         );
-    //     })
-    // }
-
-    render() {
+    renderTablePages(props) {
         const pageNumbers = [];
         for (let i = 1; i <= Math.ceil(this.state.items.length / this.state.itemsPerPage); i++) {
             pageNumbers.push(i);
         }
 
-        const renderPageNumbers = pageNumbers.map(number => {
+        return pageNumbers.map(number => {
             return (
-                <li
+                <MyClickable
                     key={number}
                     id={number}
                     onClick={this.handleClick}
+                    index={number}
+                    isActive={this.state.activeIndex === number}
                 >
                     {number}
-                </li>
+                </MyClickable>
             );
         });
 
+
+    }
+
+    render() {
         const {error, isLoaded} = this.state;
         if (error) {
             return <div>Error: {error.message}</div>;
@@ -114,23 +110,44 @@ class Proxy extends React.Component {
             return <div>Loading...</div>;
         } else {
             return (
-                <div>
-                    <h1 id='title'>React Dynamic Table</h1>
-                    <table id='proxies'>
-                        <tbody>
-                        <tr>{this.renderTableHeader()}</tr>
-                        {this.renderTableData()}
-                        </tbody>
-
-                    </table>
-                    <ul id="page-numbers">
-                        {renderPageNumbers}
-                    </ul>
+                <div className="container-fluid text-center">
+                    <div className="row content justify-content-md-center">
+                        <div className="col-sm-8 text-left h5">
+                            <h1 id='title'>React Dynamic Table</h1>
+                            <div className="table-responsive-sm">
+                                <table className="table table-striped table-bordered table-sm">
+                                    <tbody>
+                                    <tr>{this.renderTableHeader()}</tr>
+                                    {this.renderTableData()}
+                                    </tbody>
+                                </table>
+                                    <ul id='page-numbers'>
+                                    {this.renderTablePages()}
+                                    </ul>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             );
         }
     }
 }
 
+
+class MyClickable extends React.Component {
+    handleClick = () => this.props.onClick(this.props.index);
+
+    render() {
+        return <li
+            type='button'
+            className={
+                this.props.isActive ? 'active' : 'album'
+            }
+            onClick={ this.handleClick }
+        >
+            { this.props.index }
+        </li>
+    }
+}
 
 export default Proxy;

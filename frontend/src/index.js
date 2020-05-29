@@ -1,12 +1,17 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import './index.css';
 import * as serviceWorker from './serviceWorker';
-import Proxy from "./Proxy/Components/Proxy";
+// import Proxy from "./Proxy/Components/Proxy";
+// import NavBar from "./Proxy/Components/nav";
+import 'bootstrap/dist/css/bootstrap.min.css';
+import './index.css';
+
+import App from "./App";
+
 
 ReactDOM.render(
     <React.StrictMode>
-        <Proxy/>
+        <App></App>
     </React.StrictMode>,
     document.getElementById('root')
 );
