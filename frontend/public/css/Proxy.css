@@ -1,49 +1,34 @@
 .navbar {
-  margin-bottom: 0;
-  border-radius: 0;
+    margin-bottom: 0;
+    border-radius: 0;
 }
 
-/* Set height of the grid so .sidenav can be 100% (adjust as needed) */
-.row.content {height: 450px}
+#page-numbers {
 
-/* Set gray background color and 100% height */
-.sidenav {
-  padding-top: 20px;
-  background-color: #f1f1f1;
-  height: 100%;
-}
-
-/* Set black background color, white text and some padding */
-footer {
-  background-color: #555;
-  color: white;
-  padding: 15px;
-}
-
-/* On small screens, set height to 'auto' for sidenav and grid */
-@media screen and (max-width: 767px) {
-  .sidenav {
-    height: auto;
-    padding: 15px;
-  }
-  .row.content {height:auto;}
-}
-#page-numbers{
-
-  list-style-type: none;
-  display: flex;
-  justify-content: center;
-  margin: auto;
+    list-style-type: none;
+    display: flex;
+    justify-content: center;
+    margin: auto;
 
 }
 
 #page-numbers li {
-  color: #888;
-  margin-left: 0.5rem;
-  margin-right: 0.5rem;
+    color: #888;
+    margin-left: 0.5rem;
+    margin-right: 0.5rem;
 }
 
 #page-numbers li.active {
-  color: #005cbf;
-  text-decoration: underline;
+    color: #005cbf;
+    text-decoration: underline;
+}
+
+footer {
+    list-style-type: none;
+    display: flex;
+    justify-content: center;
+    margin: auto;
+    background-color: #555;
+    color: white;
+    padding: 15px;
 }

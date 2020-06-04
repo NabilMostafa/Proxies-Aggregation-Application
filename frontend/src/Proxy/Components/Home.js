@@ -3,14 +3,14 @@ import Intro from './Intro';
 
 import Proxy from "./Proxy";
 
-class Home extends Component{
-    render(){
-        return(
+class Home extends Component {
+    render() {
+        return (
             <div>
                 <Intro/>
                 <Proxy/>
-
             </div>
+
         );
     }
 }
