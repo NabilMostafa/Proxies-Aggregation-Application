@@ -26,7 +26,6 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['*']
 
-
 # Application definition
 
 INSTALLED_APPS = [
@@ -37,8 +36,10 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'corsheaders',
+
     'rest_framework',
     'proxy_api',
+
 ]
 
 MIDDLEWARE = [
@@ -51,6 +52,8 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
+    'ipinfo_django.middleware.IPinfo',
+
 ]
 
 REST_FRAMEWORK = {
@@ -119,9 +122,18 @@ USE_L10N = True
 
 USE_TZ = False
 
-CORS_ORIGIN_ALLOW_ALL=True
+CORS_ORIGIN_ALLOW_ALL = True
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.0/howto/static-files/
 
 STATIC_URL = '/static/'
+
+IPINFO_TOKEN = 'abaf4461e138e8'
+IPINFO_SETTINGS = {
+    'cache_options': {
+        'ttl': 30,
+        'maxsize': 128
+    },
+}
+IPINFO_FILTER = lambda request: request.scheme == 'http'
