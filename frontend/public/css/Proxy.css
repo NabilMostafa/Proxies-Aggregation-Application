@@ -36,3 +36,23 @@ footer {
 #tableTitle {
     text-align: center;
 }
+
+#provider-list {
+
+    list-style-type: none;
+    display: flex;
+    justify-content: center;
+    margin: auto;
+
+}
+
+#provider-list li {
+    color: #888;
+    margin-left: 0.5rem;
+    margin-right: 0.5rem;
+}
+
+#provider-list li.active {
+    color: #005cbf;
+    text-decoration: underline;
+}

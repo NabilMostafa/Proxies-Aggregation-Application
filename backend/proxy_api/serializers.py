@@ -15,3 +15,9 @@ class ProxySerializer(serializers.ModelSerializer):
     class Meta:
         model = Proxy
         fields = '__all__'
+
+
+class ProviderSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ProxyProvider
+        fields = '__all__'

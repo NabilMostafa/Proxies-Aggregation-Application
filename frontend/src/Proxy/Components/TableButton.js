@@ -5,15 +5,17 @@ class MyClickable extends React.Component {
 
 
     render() {
-        return <li
-            type='button'
-            className={
-                this.props.isActive ? 'active' : ''
-            }
-            onClick={this.handleClick}
-        >
-            {this.props.index}
-        </li>
+        return (
+            <li
+                type='button'
+                className={
+                    this.props.isActive ? 'active' : ''
+                }
+                onClick={this.handleClick}
+            >
+               ( {this.props.text} )
+            </li>
+        )
     }
 }
 

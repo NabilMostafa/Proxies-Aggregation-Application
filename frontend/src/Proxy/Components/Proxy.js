@@ -13,20 +13,39 @@ class Proxy extends React.Component {
             itemsPerPage: 25,
             activeIndex: 1,
             isBoxVisible: false,
-            addClassCheck: false
+            addClassCheck: false,
+            providers: [],
+            activeProvider: null,
+            currentProvider: null
 
         };
-        this.handleClick = this.handleClick.bind(this);
+        this.handlePageClick = this.handlePageClick.bind(this);
+        this.handleProviderClick = this.handleProviderClick.bind(this);
     }
 
     toggle() {
     }
 
-    handleClick(event) {
+    handlePageClick(event) {
         this.setState({
             activeIndex: event,
             currentPage: event
         });
+    }
+
+    handleProviderClick(event) {
+        fetch(`http://127.0.0.1:8000/api/provider-list/${event}`)
+            .then(res => res.json())
+            .then(
+                (result) => {
+                    this.setState({
+                        items: result[0],
+                        activeProvider: event,
+                        currentProvider: event,
+                        activeIndex: 1,
+                        currentPage: 1
+                    })
+                });
     }
 
 
@@ -37,7 +56,8 @@ class Proxy extends React.Component {
                 (result) => {
                     this.setState({
                         isLoaded: true,
-                        items: result[0],
+                        items: result['proxies'],
+                        providers: result['providers']
                     });
                 },
                 // Note: it's important to handle errors here
@@ -54,7 +74,6 @@ class Proxy extends React.Component {
     }
 
     renderTableData() {
-
         const {items, currentPage, itemsPerPage} = this.state;
 
         const indexOfLastItem = currentPage * itemsPerPage;
@@ -141,6 +160,22 @@ class Proxy extends React.Component {
         )
     }
 
+    renderProviders() {
+        return this.state.providers.map(provider => {
+                const {id, provider_name} = provider;
+                return (
+                    <MyClickable
+                        key={id}
+                        onClick={this.handleProviderClick}
+                        index={id}
+                        text={provider_name}
+                        isActive={this.state.activeProvider === id}>
+                    </MyClickable>
+                )
+            }
+        )
+    }
+
     renderTablePages(props) {
         const pageNumbers = [];
         for (let i = 1; i <= Math.ceil(this.state.items.length / this.state.itemsPerPage); i++) {
@@ -148,15 +183,18 @@ class Proxy extends React.Component {
         }
         return pageNumbers.map(number => {
             return (
-                <MyClickable
-                    key={number}
-                    id={number}
-                    onClick={this.handleClick}
-                    index={number}
-                    isActive={this.state.activeIndex === number}
-                >
-                    {number}
-                </MyClickable>
+                <div>
+                    <MyClickable
+                        key={number}
+                        id={number}
+                        onClick={this.handlePageClick}
+                        index={number}
+                        text={number}
+                        isActive={this.state.activeIndex === number}
+                    >
+                        {number}
+                    </MyClickable>
+                </div>
             );
         });
 
@@ -173,7 +211,11 @@ class Proxy extends React.Component {
             return (
                 <div className="row content justify-content-md-center">
                     <div className="col-sm-8 text-left h5">
-                        <h1 id='tableTitle'>Proxy  Table</h1>
+                        <h1 id='tableTitle'>Proxy Table</h1>
+                        <ul id='provider-list'>
+                            Providers List :
+                            {this.renderProviders()}
+                        </ul>
                         <div className="table-responsive-sm">
                             <table className="table table-striped table-bordered table-sm">
                                 <tbody>

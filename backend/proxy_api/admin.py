@@ -3,3 +3,4 @@ from proxy_api.models import *
 
 # Register your models here.
 admin.site.register(Proxy)
+admin.site.register(ProxyProvider)

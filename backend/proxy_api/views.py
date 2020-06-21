@@ -16,6 +16,7 @@ import threading
 from datetime import datetime, timedelta
 from pytz import utc
 import urllib.request as urllib
+import urllib3
 
 
 # Create your views here.
@@ -25,6 +26,17 @@ def proxies_list(request):
     if request.method == 'GET':
         proxy_list()
         proxies = Proxy.objects.all()
+        serializer = ProxySerializer(proxies, many=True)
+        # --------------------------------------------------
+        provider = ProxyProvider.objects.all()
+        serializer2 = ProviderSerializer(provider, many=True)
+        return JsonResponse({'proxies': serializer.data, 'providers': serializer2.data}, safe=False)
+
+
+@csrf_exempt
+def provider_list(request, id):
+    if request.method == 'GET':
+        proxies = Proxy.objects.filter(provider__id=id)
         serializer = ProxySerializer(proxies, many=True)
         return JsonResponse([serializer.data], safe=False)
 
@@ -60,7 +72,6 @@ def proxy_11():
         answer = json.loads(response.text)
         provider = add_or_get_provider(url, name)
         try:
-
             for proxy in answer['data']:
                 Proxy.objects.update_or_create(
                     ip=proxy['ip'],
@@ -123,6 +134,22 @@ def is_bad_proxy(proxy, url):
     except Exception as e:
         print(proxy, 'fail', e)
         return True
+
+
+def is_proxy_working(pip):
+    proxyparsed = "https://" + (pip)
+    proxy = urllib3.ProxyManager(proxyparsed, timeout=3.0)
+    try:
+        r = proxy.request('GET', 'https://api.ipify.org/')
+        print(r)
+    except Exception:
+        return False
+
+    if r.status == 200 and r.data.decode("utf-8") == pip.split(':')[0]:
+        return True
+
+    else:
+        return False
 
 # ------------------------- TO BE REMOVED -
 #
