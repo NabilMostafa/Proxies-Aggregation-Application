@@ -38,7 +38,11 @@ def provider_list(request, id):
     if request.method == 'GET':
         proxies = Proxy.objects.filter(provider__id=id)
         serializer = ProxySerializer(proxies, many=True)
-        return JsonResponse([serializer.data], safe=False)
+        # --------------------------------------------------
+
+        provider = ProxyProvider.objects.get(id=id)
+        serializer2 = ProviderSerializer(provider)
+        return JsonResponse({'proxies': serializer.data, 'providers': serializer2.data}, safe=False)
 
 
 def proxy_list():

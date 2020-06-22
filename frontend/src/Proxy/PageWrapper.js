@@ -7,12 +7,16 @@ class PageWrapper extends Component {
     render() {
         return (
             <div>
-                <div className="container-fluid text-center">
+                <div className="container-fluid text-center" style={{"minHeight": "100vh"}}>
 
-                <NavBar/>
+                    <NavBar/>
                     <Home/>
+
+                </div>
+                <div className="text-center">
                     <Footer/>
                 </div>
+
             </div>
         )
     }

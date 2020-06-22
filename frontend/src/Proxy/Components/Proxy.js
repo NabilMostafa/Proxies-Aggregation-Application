@@ -1,6 +1,8 @@
 import React from "react";
-import MyClickable from "./TableButton";
-
+import TableButton from "./TableComponents/TableButton";
+import TableHeader from "./TableComponents/TableHeader";
+import TableBody from "./TableComponents/TableBody";
+import ProviderDataTable from "./TableComponents/ProviderDataTable";
 
 class Proxy extends React.Component {
     constructor(props) {
@@ -16,20 +18,49 @@ class Proxy extends React.Component {
             addClassCheck: false,
             providers: [],
             activeProvider: null,
-            currentProvider: null
+            currentProvider: null,
+            render: '',
+            certainProxy: false,
+            dataProxyProvider: [],
+            headers: [
+                'ID', 'IP', 'Port', 'Country', 'CountryCode',
+                'CreatedAt',
+                'UpdatedAt',
+                'Provider',
+                'Working']
 
         };
         this.handlePageClick = this.handlePageClick.bind(this);
         this.handleProviderClick = this.handleProviderClick.bind(this);
+        this.handleTableChangeClick = this.handleTableChangeClick.bind(this);
+        this.handleTableResetClick = this.handleTableResetClick.bind(this);
     }
 
-    toggle() {
+    handleTableChangeClick(event) {
+        this.setState({
+            render: event,
+        });
+    }
+
+    handleTableResetClick(event) {
+        fetch(`http://127.0.0.1:8000/api/proxies/`)
+            .then(res => res.json())
+            .then(
+                (result) => {
+                    this.setState({
+                        items: result['proxies'],
+                        certainProxy: false,
+                        dataProxyProvider: [],
+                        activeProvider: null,
+                        currentProvider: null,
+                    });
+                })
     }
 
     handlePageClick(event) {
         this.setState({
             activeIndex: event,
-            currentPage: event
+            currentPage: event,
         });
     }
 
@@ -38,12 +69,15 @@ class Proxy extends React.Component {
             .then(res => res.json())
             .then(
                 (result) => {
+                    console.log(result['providers']);
                     this.setState({
-                        items: result[0],
+                        items: result['proxies'],
                         activeProvider: event,
                         currentProvider: event,
                         activeIndex: 1,
-                        currentPage: 1
+                        currentPage: 1,
+                        certainProxy: true,
+                        dataProxyProvider: result['providers']
                     })
                 });
     }
@@ -84,36 +118,12 @@ class Proxy extends React.Component {
             const {id, ip, port, country, country_code, createdAt, updatedAt, providerName, working} = proxy; //destructuring
 
             return (
-                <tr key={id}>
-                    <td>{id}</td>
-                    <td>{country}</td>
-                    <td>{country_code}</td>
-                    <td>{createdAt}</td>
-                    <td>{ip}</td>
-                    <td>{port}</td>
-                    <td>{updatedAt}</td>
-                    <td>{providerName}</td>
-                    <td>
-                        {working ?
-                            <span>
-                            <i id={'i-t' + id} className={'fas fa-check'} style={{display: "block"}}/>
-                            <i id={'i-f' + id} className={'fas fa-times'} style={{display: "none"}}/>
-                            </span>
-                            :
-                            <span>
-                            <i id={'i-t' + id} className={'fas fa-check'} style={{display: "none"}}/>
-                            <i id={'i-f' + id} className={'fas fa-times'} style={{display: "block"}}/>
-                            </span>
-
-                        }
-                        <button onClick={(event) => {
-                            this.reCheckProxy(id)
-                        }} type="button"
-                                className="btn btn-primary">Re-Check
-                        </button>
-
-                    </td>
-                </tr>
+                <TableBody
+                    key={id}
+                    BodyData={[
+                        id, ip, port, country, country_code, createdAt, updatedAt, providerName, working
+                    ]}
+                />
             )
         })
     }
@@ -144,47 +154,31 @@ class Proxy extends React.Component {
     }
 
 
-    renderTableHeader() {
-        return (
-            <tr>
-                <th>ID</th>
-                <th>Country</th>
-                <th>CountryCode</th>
-                <th>CreatedAt</th>
-                <th>Ip</th>
-                <th>Port</th>
-                <th>UpdatedAt</th>
-                <th>Provider</th>
-                <th>Working</th>
-            </tr>
-        )
-    }
-
     renderProviders() {
         return this.state.providers.map(provider => {
                 const {id, provider_name} = provider;
                 return (
-                    <MyClickable
+                    <TableButton
                         key={id}
                         onClick={this.handleProviderClick}
                         index={id}
                         text={provider_name}
                         isActive={this.state.activeProvider === id}>
-                    </MyClickable>
+                    </TableButton>
                 )
             }
         )
     }
 
-    renderTablePages(props) {
+    renderTablePages() {
         const pageNumbers = [];
         for (let i = 1; i <= Math.ceil(this.state.items.length / this.state.itemsPerPage); i++) {
             pageNumbers.push(i);
         }
         return pageNumbers.map(number => {
             return (
-                <div>
-                    <MyClickable
+                <div key={number}>
+                    <TableButton
                         key={number}
                         id={number}
                         onClick={this.handlePageClick}
@@ -193,7 +187,7 @@ class Proxy extends React.Component {
                         isActive={this.state.activeIndex === number}
                     >
                         {number}
-                    </MyClickable>
+                    </TableButton>
                 </div>
             );
         });
@@ -214,12 +208,26 @@ class Proxy extends React.Component {
                         <h1 id='tableTitle'>Proxy Table</h1>
                         <ul id='provider-list'>
                             Providers List :
+                            <TableButton
+                                key={Math.random()}
+                                onClick={this.handleTableResetClick}
+                                text={'Show All'}
+                            />
                             {this.renderProviders()}
                         </ul>
+                        {this.state.certainProxy ?
+                            <ProviderDataTable
+                                data={this.state.dataProxyProvider}
+                            /> :
+                            ''
+                        }
+
                         <div className="table-responsive-sm">
                             <table className="table table-striped table-bordered table-sm">
                                 <tbody>
-                                {this.renderTableHeader()}
+                                <TableHeader
+                                    headers={this.state.headers}
+                                />
                                 {this.renderTableData()}
                                 </tbody>
                             </table>

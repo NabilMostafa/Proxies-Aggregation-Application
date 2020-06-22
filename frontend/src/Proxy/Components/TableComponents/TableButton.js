@@ -1,6 +1,6 @@
 import React from "react";
 
-class MyClickable extends React.Component {
+class TableButton extends React.Component {
     handleClick = () => this.props.onClick(this.props.index);
 
 
@@ -19,4 +19,4 @@ class MyClickable extends React.Component {
     }
 }
 
-export default MyClickable
+export default TableButton
