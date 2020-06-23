@@ -3,6 +3,7 @@ import TableButton from "./TableComponents/TableButton";
 import TableHeader from "./TableComponents/TableHeader";
 import TableBody from "./TableComponents/TableBody";
 import ProviderDataTable from "./TableComponents/ProviderDataTable";
+import TestURLTable from "./TableComponents/TestURLTable";
 
 class Proxy extends React.Component {
     constructor(props) {
@@ -11,6 +12,7 @@ class Proxy extends React.Component {
             error: null,
             isLoaded: false,
             items: [],
+            allItems: [],
             currentPage: 1,
             itemsPerPage: 25,
             activeIndex: 1,
@@ -22,39 +24,30 @@ class Proxy extends React.Component {
             render: '',
             certainProxy: false,
             dataProxyProvider: [],
-            headers: [
-                'ID', 'IP', 'Port', 'Country', 'CountryCode',
-                'CreatedAt',
-                'UpdatedAt',
-                'Provider',
-                'Working']
+            ShowTestUrls: false,
 
         };
         this.handlePageClick = this.handlePageClick.bind(this);
         this.handleProviderClick = this.handleProviderClick.bind(this);
-        this.handleTableChangeClick = this.handleTableChangeClick.bind(this);
+        this.handleTestUrlsTableClick = this.handleTestUrlsTableClick.bind(this);
         this.handleTableResetClick = this.handleTableResetClick.bind(this);
     }
 
-    handleTableChangeClick(event) {
+    handleTestUrlsTableClick(event) {
         this.setState({
-            render: event,
+            ShowTestUrls: !this.state.ShowTestUrls,
         });
     }
 
     handleTableResetClick(event) {
-        fetch(`http://127.0.0.1:8000/api/proxies/`)
-            .then(res => res.json())
-            .then(
-                (result) => {
-                    this.setState({
-                        items: result['proxies'],
-                        certainProxy: false,
-                        dataProxyProvider: [],
-                        activeProvider: null,
-                        currentProvider: null,
-                    });
-                })
+        this.setState({
+            items: this.state.allItems,
+            certainProxy: false,
+            dataProxyProvider: [],
+            activeProvider: null,
+            currentProvider: null,
+        });
+
     }
 
     handlePageClick(event) {
@@ -69,7 +62,6 @@ class Proxy extends React.Component {
             .then(res => res.json())
             .then(
                 (result) => {
-                    console.log(result['providers']);
                     this.setState({
                         items: result['proxies'],
                         activeProvider: event,
@@ -91,7 +83,9 @@ class Proxy extends React.Component {
                     this.setState({
                         isLoaded: true,
                         items: result['proxies'],
-                        providers: result['providers']
+                        providers: result['providers'],
+                        allItems: result['proxies'],
+
                     });
                 },
                 // Note: it's important to handle errors here
@@ -207,12 +201,34 @@ class Proxy extends React.Component {
                     <div className="col-sm-8 text-left h5">
                         <h1 id='tableTitle'>Proxy Table</h1>
                         <ul id='provider-list'>
+                            {this.state.ShowTestUrls === false ?
+                                <TableButton
+                                    key={Math.random()}
+                                    onClick={this.handleTestUrlsTableClick}
+                                    text={'Show Test URLs Data'}
+                                /> : <TableButton
+                                    key={Math.random()}
+                                    onClick={this.handleTestUrlsTableClick}
+                                    text={'Hide Test URLs Data!'}
+                                />
+                            }
+
+                        </ul>
+                        <ul>
+                            {this.state.ShowTestUrls ?
+                                <TestURLTable/> :
+                                ''
+                            }
+                        </ul>
+                        <ul id='provider-list'>
                             Providers List :
-                            <TableButton
-                                key={Math.random()}
-                                onClick={this.handleTableResetClick}
-                                text={'Show All'}
-                            />
+                            {this.state.activeProvider !== null ?
+                                <TableButton
+                                    key={Math.random()}
+                                    onClick={this.handleTableResetClick}
+                                    text={'Show All'}
+                                /> : ''
+                            }
                             {this.renderProviders()}
                         </ul>
                         {this.state.certainProxy ?
@@ -226,7 +242,13 @@ class Proxy extends React.Component {
                             <table className="table table-striped table-bordered table-sm">
                                 <tbody>
                                 <TableHeader
-                                    headers={this.state.headers}
+                                    headers={[
+                                        'ID', 'IP', 'Port', 'Country', 'CountryCode',
+                                        'CreatedAt',
+                                        'UpdatedAt',
+                                        'Provider',
+                                        'Working']
+                                    }
                                 />
                                 {this.renderTableData()}
                                 </tbody>

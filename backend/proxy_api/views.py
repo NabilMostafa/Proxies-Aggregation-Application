@@ -47,19 +47,26 @@ def provider_list(request, id):
 
 def proxy_list():
     # check_proxy_list()
+    proxy_list_download()
     proxy_11()
 
 
-# def proxy_spider():
-#     threading.Timer(60, proxy_spider).start()
-#
-#     url = 'https://proxy-spider.com/api/proxies.json'
-#     data = {
-#         'api_key': '01-29e391a999a65dec5a431757a876524',
-#     }
-#     response = requests.post(url, data)
-#     answer = json.loads(response.text)
-#     return answer['data']
+def proxy_list_download():
+    threading.Timer(1900, proxy_list_download).start()
+    proxyList = {"data": []}
+
+    url = 'https://www.proxy-list.download/api/v1/get?type=http&country=US'
+    response = requests.get(url)
+    for ip in response.text.splitlines():
+        proxyList["data"].append(
+            {'ip': ip.split(':')[0], 'port': ip.split(':')[1], 'country': 'United States', 'country_code': 'US'})
+
+    url2 = 'https://www.proxy-list.download/api/v1/get?type=http&country=DE'
+    response = requests.get(url2)
+    for ip in response.text.splitlines():
+        proxyList["data"].append(
+            {'ip': ip.split(':')[0], 'port': ip.split(':')[1], 'country': 'Germany', 'country_code': 'DE'})
+    print(proxyList)
 
 
 def proxy_11():
