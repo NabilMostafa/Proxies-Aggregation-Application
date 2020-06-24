@@ -25,7 +25,11 @@ import urllib3
 def proxies_list(request):
     if request.method == 'GET':
         proxy_list()
-        proxies = Proxy.objects.all()
+        proxies = Proxy.objects.all().order_by('-id')
+        for proxy in proxies:
+            last_update_diff = (datetime.now() - proxy.updatedAt).days
+            if last_update_diff > 7 and not proxy.working:
+                proxy.delete()
         serializer = ProxySerializer(proxies, many=True)
         # --------------------------------------------------
         provider = ProxyProvider.objects.all()
@@ -38,6 +42,7 @@ def provider_list(request, id):
     if request.method == 'GET':
         proxies = Proxy.objects.filter(provider__id=id)
         serializer = ProxySerializer(proxies, many=True)
+
         # --------------------------------------------------
 
         provider = ProxyProvider.objects.get(id=id)
@@ -66,7 +71,7 @@ def proxy_list_download():
     for ip in response.text.splitlines():
         proxyList["data"].append(
             {'ip': ip.split(':')[0], 'port': ip.split(':')[1], 'country': 'Germany', 'country_code': 'DE'})
-    print(proxyList)
+    # print(proxyList)
 
 
 def proxy_11():
@@ -93,6 +98,7 @@ def proxy_11():
                         'createdAt': datetime.strptime(proxy['createdAt'], '%a, %d %b %Y %H:%M:%S  %Z'),
                         'port': proxy['port'],
                         'updatedAt': datetime.strptime(proxy['updatedAt'], '%a, %d %b %Y %H:%M:%S  %Z'),
+                        'lastFoundAt': datetime.strptime(proxy['updatedAt'], '%a, %d %b %Y %H:%M:%S  %Z'),
                     }
                 )
         except Exception as e:
@@ -120,49 +126,51 @@ def add_or_get_provider(url, name):
 def check_proxy(request):
     data = json.loads(request.body)
     proxy = Proxy.objects.get(id=data['id'])
-    test_url = 'https://httpbin.org/ip'
-    if is_bad_proxy(proxy, test_url):
+    test_url = data['test_url']
+    if is_working_proxy(proxy, test_url):
+        print(proxy.ip, "is working")
+        proxy.working = True
+
+        proxy.save()
+        return JsonResponse({'error': False, 'working': True}, safe=False)
+    else:
         print("Bad Proxy", proxy.ip)
         proxy.working = False
         proxy.save()
         return JsonResponse({'error': False, 'working': False})
-    else:
-        print(proxy.ip, "is working")
-        proxy.working = True
-        proxy.save()
-        return JsonResponse({'error': False, 'working': True}, safe=False)
 
 
-#
-def is_bad_proxy(proxy, url):
+def is_working_proxy(proxy, url):
     try:
+
         print('HTTP han aho test')
-        r = requests.get(url='http://httpbin.org/ip',
-                         proxies={"http": '46.10.199.90:34607'})
+        proxy_ip = str(proxy.ip + ':' + proxy.port)
+        print(proxy_ip, url)
+
+        r = requests.get(url=url,
+                         proxies={"http": proxy_ip})
         print(r.json()['origin'])
 
-        return False
+        return True
     except Exception as e:
         print(proxy, 'fail', e)
-        return True
-
-
-def is_proxy_working(pip):
-    proxyparsed = "https://" + (pip)
-    proxy = urllib3.ProxyManager(proxyparsed, timeout=3.0)
-    try:
-        r = proxy.request('GET', 'https://api.ipify.org/')
-        print(r)
-    except Exception:
-        return False
-
-    if r.status == 200 and r.data.decode("utf-8") == pip.split(':')[0]:
-        return True
-
-    else:
         return False
 
 # ------------------------- TO BE REMOVED -
+# def is_proxy_working(pip):
+#     proxyparsed = "https://" + (pip)
+#     proxy = urllib3.ProxyManager(proxyparsed, timeout=3.0)
+#     try:
+#         r = proxy.request('GET', 'https://api.ipify.org/')
+#         print(r)
+#     except Exception:
+#         return False
+#
+#     if r.status == 200 and r.data.decode("utf-8") == pip.split(':')[0]:
+#         return True
+#
+#     else:
+#         return False
 #
 # def check_proxy_list():
 #     proxylist = []

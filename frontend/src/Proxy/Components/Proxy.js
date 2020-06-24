@@ -88,9 +88,6 @@ class Proxy extends React.Component {
 
                     });
                 },
-                // Note: it's important to handle errors here
-                // instead of a catch() block so that we don't swallow
-                // exceptions from actual bugs in components.
                 (error) => {
                     this.setState({
                         isLoaded: true,
@@ -122,30 +119,7 @@ class Proxy extends React.Component {
         })
     }
 
-    reCheckProxy(id) {
-        fetch(`http://127.0.0.1:8000/api/check/`, {
-            method: 'PUT',
-            body: JSON.stringify({
-                    'id': id
-                }
-            )
-        }).then(response => response.json())
-            .then((result) => {
-                let elementFalse = document.getElementById('i-f' + id);
-                let elementTrue = document.getElementById('i-t' + id);
 
-                console.log(result['working']);
-                if (result['working']) {
-                    elementFalse.style.display = (elementFalse.style.display = 'none');
-                    elementTrue.style.display = (elementTrue.style.display = 'block');
-
-                } else {
-                    elementFalse.style.display = (elementFalse.style.display = 'block');
-                    elementTrue.style.display = (elementTrue.style.display = 'none');
-
-                }
-            })
-    }
 
 
     renderProviders() {
@@ -235,12 +209,11 @@ class Proxy extends React.Component {
                             <ProviderDataTable
                                 data={this.state.dataProxyProvider}
                             /> :
-                            ''
+                            null
                         }
 
                         <div className="table-responsive-sm">
                             <table className="table table-striped table-bordered table-sm">
-                                <tbody>
                                 <TableHeader
                                     headers={[
                                         'ID', 'IP', 'Port', 'Country', 'CountryCode',
@@ -251,7 +224,6 @@ class Proxy extends React.Component {
                                     }
                                 />
                                 {this.renderTableData()}
-                                </tbody>
                             </table>
                             <ul id='page-numbers'>
                                 {this.renderTablePages()}

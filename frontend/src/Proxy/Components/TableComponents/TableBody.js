@@ -1,11 +1,31 @@
 import React from "react";
+import TableButton from "./TableButton";
+import TestUrlsProxy from "./TestUrlsProxy";
 
 class TableBody extends React.Component {
+
+    constructor(props) {
+        super(props);
+        this.state = {
+            ShowTestUrls: false,
+
+        };
+        this.handleTestUrlsTableClick = this.handleTestUrlsTableClick.bind(this);
+    }
+
+    handleTestUrlsTableClick(event) {
+        this.setState({
+            ShowTestUrls: !this.state.ShowTestUrls,
+        });
+    }
+
+
 
     render() {
         const id = this.props.BodyData[0];
         const working = this.props.BodyData[8];
         return (
+            <tbody>
             <tr key={this.props.BodyData[0]}>
                 <td>{this.props.BodyData[0]}</td>
                 <td>{this.props.BodyData[1]}</td>
@@ -27,15 +47,35 @@ class TableBody extends React.Component {
                             <i id={'i-f' + id} className={'fas fa-times'} style={{display: "block"}}/>
                             </span>
 
-                    }
-                    <button onClick={(event) => {
-                        this.reCheckProxy(id)
-                    }} type="button"
-                            className="btn btn-primary">Re-Check
-                    </button>
+                    }</td>
+                <td>
 
+
+
+                    {this.state.ShowTestUrls === false ?
+                        <TableButton
+                            key={Math.random()}
+                            onClick={this.handleTestUrlsTableClick}
+                            text={'Show Proxy Test URLs Data'}
+                        /> : <TableButton
+                            key={Math.random()}
+                            onClick={this.handleTestUrlsTableClick}
+                            text={'Hide Proxy Test URLs Data!'}
+                        />
+                    }
                 </td>
+
             </tr>
+            <tr>
+                {this.state.ShowTestUrls ?
+                    <TestUrlsProxy
+                        key={id}
+                        id={id}
+                    /> :
+                    null
+                }
+            </tr>
+            </tbody>
 
         )
     }
