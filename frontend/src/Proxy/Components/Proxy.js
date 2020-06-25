@@ -106,13 +106,13 @@ class Proxy extends React.Component {
         const currentItems = items.slice(indexOfFirstItem, indexOfLastItem);
 
         return currentItems.map((proxy, index) => {
-            const {id, ip, port, country, country_code, createdAt, updatedAt, providerName, working} = proxy; //destructuring
+            const {id, ip, port, createdAt, updatedAt,lastFoundAt ,providerName} = proxy; //destructuring
 
             return (
                 <TableBody
                     key={id}
                     BodyData={[
-                        id, ip, port, country, country_code, createdAt, updatedAt, providerName, working
+                        id, ip, port,  createdAt, updatedAt, lastFoundAt,providerName
                     ]}
                 />
             )
@@ -172,7 +172,7 @@ class Proxy extends React.Component {
         } else {
             return (
                 <div className="row content justify-content-md-center">
-                    <div className="col-sm-8 text-left h5">
+                    <div className="col-sm-9 text-left h5">
                         <h1 id='tableTitle'>Proxy Table</h1>
                         <ul id='provider-list'>
                             {this.state.ShowTestUrls === false ?
@@ -216,11 +216,12 @@ class Proxy extends React.Component {
                             <table className="table table-striped table-bordered table-sm">
                                 <TableHeader
                                     headers={[
-                                        'ID', 'IP', 'Port', 'Country', 'CountryCode',
+                                        'ID', 'IP', 'Port',
                                         'CreatedAt',
-                                        'UpdatedAt',
+                                        'Last successful functionality test date',
+                                        'Last Found At',
                                         'Provider',
-                                        'Working']
+                                        '']
                                     }
                                 />
                                 {this.renderTableData()}

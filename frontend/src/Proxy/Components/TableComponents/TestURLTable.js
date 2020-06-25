@@ -14,7 +14,7 @@ class TestURLTable extends React.Component {
                     </tr>
                     <tr>
                         <td>
-                            1url
+                            httpbin.org/ip
                         </td>
                         <td>
                             1desc
@@ -22,7 +22,7 @@ class TestURLTable extends React.Component {
                     </tr>
                     <tr>
                         <td>
-                            2url
+                            ip8.com/ip
                         </td>
                         <td>
                             2desc
@@ -30,7 +30,7 @@ class TestURLTable extends React.Component {
                     </tr>
                     <tr>
                         <td>
-                            3url
+                            api.ipify.org
                         </td>
                         <td>
                             3desc

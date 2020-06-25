@@ -6,47 +6,65 @@ class TestUrlsProxy extends React.Component {
         this.state = {
             data: [],
             isLoaded: false,
-            error: null
+            error: null,
+            currentlyChecking: false,
+            url1CheckedAt: this.props.data[0] ? this.props.data[0].checkedAt : null,
+            url2CheckedAt: this.props.data[1] ? this.props.data[1].checkedAt : null,
+            url3CheckedAt: this.props.data[2] ? this.props.data[2].checkedAt : null
 
         };
     }
 
-    reCheckProxy(url) {
-        console.log(this.props.id);
-        console.log(url);
+    reCheckProxy(url, urlnum) {
+        this.setState({
+            currentlyChecking: true
+
+        });
         let id = this.props.id;
         fetch(`http://127.0.0.1:8000/api/check/`, {
             method: 'PUT',
             body: JSON.stringify({
                     'id': id,
-                    'test_url':url
+                    'test_url': url
                 }
             )
         }).then(response => response.json())
             .then((result) => {
+                    console.log(result);
+                    if (urlnum === 1 && result['test_url']) {
+                        this.setState({url1CheckedAt: result['test_url'].checkedAt});
+                        this.props.changeLastDate(result['test_url'].checkedAt)
+
+                    } else if (urlnum === 2 && result['test_url']) {
+                        this.setState({url2CheckedAt: result['test_url'].checkedAt});
+                        this.props.changeLastDate(result['test_url'].checkedAt)
+                    } else if (urlnum === 3 && result['test_url']) {
+                        this.setState({url3CheckedAt: result['test_url'].checkedAt});
+                        this.props.changeLastDate(result['test_url'].checkedAt)
+                    }
+
                     this.setState({
                         data: result,
                         isLoaded: true,
-
+                        currentlyChecking: false,
                     });
-                    let elementFalse = document.getElementById('i-f' + id);
-                    let elementTrue = document.getElementById('i-t' + id);
-
-                    console.log(result['working']);
-                    if (result['working']) {
-                        elementFalse.style.display = (elementFalse.style.display = 'none');
-                        elementTrue.style.display = (elementTrue.style.display = 'block');
-
-                    } else {
-                        elementFalse.style.display = (elementFalse.style.display = 'block');
-                        elementTrue.style.display = (elementTrue.style.display = 'none');
-
-                    }
+                    // let elementFalse = document.getElementById('i-f' + id);
+                    // let elementTrue = document.getElementById('i-t' + id);
+                    //
+                    // if (result['working']) {
+                    //     elementFalse.style.display = (elementFalse.style.display = 'none');
+                    //     elementTrue.style.display = (elementTrue.style.display = 'block');
+                    //
+                    // } else {
+                    //     elementFalse.style.display = (elementFalse.style.display = 'block');
+                    //     elementTrue.style.display = (elementTrue.style.display = 'none');
+                    //
+                    // }
                 },
                 (error) => {
                     this.setState({
                         isLoaded: true,
-                        error
+                        error: error
                     });
                 })
 
@@ -64,47 +82,56 @@ class TestUrlsProxy extends React.Component {
                     </tr>
                     <tr>
                         <td>
-                            http://httpbin.org/ip
+                            httpbin.org/ip
                         </td>
                         <td>
-                            25junT14215
+                            {this.state.url1CheckedAt ? this.state.url1CheckedAt : 'Not Checked here yet'}
                         </td>
                         <td>
-                            <button onClick={(event) => {
-                                this.reCheckProxy('http://httpbin.org/ip')
-                            }} type="button"
-                                    className="btn btn-primary">Re-Check
-                            </button>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>
-                            2url
-                        </td>
-                        <td>
-                            2desc
-                        </td>
-                        <td>
-                            <button onClick={(event) => {
-                                this.reCheckProxy(this.props.id)
-                            }} type="button"
-                                    className="btn btn-primary">Re-Check
-                            </button>
+                            {!this.state.currentlyChecking ?
+                                <button onClick={(event) => {
+                                    this.reCheckProxy('http://httpbin.org/ip', 1)
+                                }} type="button"
+                                        className="btn btn-primary">Re-Check
+                                </button> :
+                                <p>Checking in progress</p>
+                            }
                         </td>
                     </tr>
                     <tr>
                         <td>
-                            3url
+                            ip8.com/ip
                         </td>
                         <td>
-                            3desc
+                            {this.state.url2CheckedAt ? this.state.url2CheckedAt : 'Not Checked here yet'}
                         </td>
                         <td>
-                            <button onClick={(event) => {
-                                this.reCheckProxy(this.props.id)
-                            }} type="button"
-                                    className="btn btn-primary">Re-Check
-                            </button>
+                            {!this.state.currentlyChecking ?
+                                <button onClick={(event) => {
+                                    this.reCheckProxy('http://ip8.com/ip', 2)
+                                }} type="button"
+                                        className="btn btn-primary">Re-Check
+                                </button> :
+                                <p>Checking in progress</p>
+                            }
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            api.ipify.org
+                        </td>
+                        <td>
+                            {this.state.url3CheckedAt ? this.state.url3CheckedAt : 'Not Checked here yet'}
+                        </td>
+                        <td>
+                            {!this.state.currentlyChecking ?
+                                <button onClick={(event) => {
+                                    this.reCheckProxy('http://api.ipify.org', 3)
+                                }} type="button"
+                                        className="btn btn-primary">Re-Check
+                                </button> :
+                                <p>Checking in progress</p>
+                            }
                         </td>
                     </tr>
                     </tbody>

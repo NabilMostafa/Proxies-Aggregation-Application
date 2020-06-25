@@ -27,8 +27,12 @@ def proxies_list(request):
         proxy_list()
         proxies = Proxy.objects.all().order_by('-id')
         for proxy in proxies:
-            last_update_diff = (datetime.now() - proxy.updatedAt).days
-            if last_update_diff > 7 and not proxy.working:
+            try:
+                last_update_diff = (datetime.now() - proxy.updatedAt).days
+            except:
+                last_update_diff = 0
+            last_found_diff = (datetime.now() - proxy.lastFoundAt).days
+            if last_update_diff > 7 and last_found_diff > 7 and not proxy.working:
                 proxy.delete()
         serializer = ProxySerializer(proxies, many=True)
         # --------------------------------------------------
@@ -54,64 +58,150 @@ def proxy_list():
     # check_proxy_list()
     proxy_list_download()
     proxy_11()
+    proxyscrape()
 
+
+# --------------------------------------------------------------- Requesting proxies func -----------------------------
 
 def proxy_list_download():
     threading.Timer(1900, proxy_list_download).start()
     proxyList = {"data": []}
+    counter = 0
 
+    # -------------------------------URL USA----------------------------
     url = 'https://www.proxy-list.download/api/v1/get?type=http&country=US'
     response = requests.get(url)
     for ip in response.text.splitlines():
         proxyList["data"].append(
-            {'ip': ip.split(':')[0], 'port': ip.split(':')[1], 'country': 'United States', 'country_code': 'US'})
-
+            {'ip': ip.split(':')[0], 'port': ip.split(':')[1]})
+    # -------------------------------URL Germany------------------------
     url2 = 'https://www.proxy-list.download/api/v1/get?type=http&country=DE'
     response = requests.get(url2)
     for ip in response.text.splitlines():
         proxyList["data"].append(
-            {'ip': ip.split(':')[0], 'port': ip.split(':')[1], 'country': 'Germany', 'country_code': 'DE'})
-    # print(proxyList)
+            {'ip': ip.split(':')[0], 'port': ip.split(':')[1]})
+    # ------------------------------- Getting time difference since last update -----------------------------------
+    try:
+        last_update_diff = (datetime.now() - ProxyProvider.objects.get(
+            provider_name='proxy-list.download').last_time_update).seconds / 60
+    except:
+        last_update_diff = 11
+
+    # ---------------------------------------------------------
+    if last_update_diff > 10:
+        provider = add_or_get_provider('https://www.proxy-list.download/api/v1/', 'proxy-list.download')
+        try:
+            provider.last_time_update = datetime.now()
+            for proxy in proxyList['data']:
+                counter += 1
+                Proxy.objects.update_or_create(
+                    ip=proxy['ip'],
+                    defaults={
+                        'provider': provider,
+                        'createdAt': datetime.now(),
+                        'port': proxy['port'],
+                        'updatedAt': datetime.now(),
+                        'lastFoundAt': datetime.now(),
+                    }
+                )
+            provider.number_of_records = counter
+            provider.save()
+
+        except Exception as e:
+            print('Error in This list: ', e)
 
 
 def proxy_11():
     threading.Timer(1900, proxy_11).start()
     url = 'https://proxy11.com/api/proxy.json'
     name = 'proxy11'
+    counter = 0
     data = {
         'key': 'MTI2Mw.XswYVw.w4tBzZRqNF1zS8fdW4PFNE9pmG4',
     }
-    last_update_diff = (datetime.now() - ProxyProvider.objects.get(provider_name=name,
-                                                                   provider_url=url).last_time_update).seconds / 60
+    # ------------------------------ Getting time difference since last update --------------------
+    try:
+        last_update_diff = (datetime.now() - ProxyProvider.objects.get(provider_name=name,
+                                                                       provider_url=url).last_time_update).seconds / 60
+    except:
+        last_update_diff = 11
+    # --------------------------------------------------------------------------------------------
     if last_update_diff > 10:
+        provider = add_or_get_provider(url, name)
         response = requests.get(url, data)
         answer = json.loads(response.text)
-        provider = add_or_get_provider(url, name)
         try:
+            provider.last_time_update = datetime.now()
             for proxy in answer['data']:
+                counter += 1
                 Proxy.objects.update_or_create(
                     ip=proxy['ip'],
                     defaults={
                         'provider': provider,
-                        'country': proxy['country'],
-                        'country_code': proxy['country_code'],
                         'createdAt': datetime.strptime(proxy['createdAt'], '%a, %d %b %Y %H:%M:%S  %Z'),
                         'port': proxy['port'],
-                        'updatedAt': datetime.strptime(proxy['updatedAt'], '%a, %d %b %Y %H:%M:%S  %Z'),
-                        'lastFoundAt': datetime.strptime(proxy['updatedAt'], '%a, %d %b %Y %H:%M:%S  %Z'),
+                        # 'updatedAt': datetime.strptime(proxy['updatedAt'], '%a, %d %b %Y %H:%M:%S  %Z'),
+                        'lastFoundAt': datetime.now(),
                     }
                 )
+            provider.number_of_records = counter
+            provider.save()
+
         except Exception as e:
             print('Error in This list: ', e)
 
         return answer
 
 
+def proxyscrape():
+    threading.Timer(1900, proxyscrape).start()
+    proxyList = {"data": []}
+    counter = 0
+
+    # ------------------------------- URL ----------------------------
+    url = 'https://api.proxyscrape.com/?request=getproxies&proxytype=http,https&limit=250'
+    response = requests.get(url)
+    for ip in response.text.splitlines():
+        proxyList["data"].append(
+            {'ip': ip.split(':')[0], 'port': ip.split(':')[1]})
+
+    # ------------------------------- Getting time difference since last update -----------------------------------
+    try:
+        last_update_diff = (datetime.now() - ProxyProvider.objects.get(
+            provider_name='proxyscrape').last_time_update).seconds / 60
+    except:
+        last_update_diff = 11
+
+    # ---------------------------------------------------------
+    if last_update_diff > 10:
+        provider = add_or_get_provider('https://api.proxyscrape.com/?request=getproxies', 'proxyscrape')
+        try:
+            provider.last_time_update = datetime.now()
+            for proxy in proxyList['data']:
+                counter += 1
+                Proxy.objects.update_or_create(
+                    ip=proxy['ip'],
+                    defaults={
+                        'provider': provider,
+                        'createdAt': datetime.now(),
+                        'port': proxy['port'],
+                        'updatedAt': datetime.now(),
+                        'lastFoundAt': datetime.now(),
+                    }
+                )
+            provider.number_of_records = counter
+            provider.save()
+
+        except Exception as e:
+            print('Error in This list: ', e)
+
+
+# ----------------------------------------------------------------------------------------------------------------
 def add_or_get_provider(url, name):
     try:
         provider = ProxyProvider.objects.get(provider_url=url)
-        provider.last_time_update = datetime.now()
         provider.save()
+        return provider
     except:
         provider = ProxyProvider()
         provider.provider_url = url
@@ -119,6 +209,17 @@ def add_or_get_provider(url, name):
         provider.last_time_update = datetime.now()
         provider.save()
     return provider
+
+
+@csrf_exempt
+def check_test_url(request):
+    try:
+        data = json.loads(request.body)
+        test_url = TestUrls.objects.filter(proxy__id=data['id'])
+        serializer = TestUrlsSerializer(test_url, many=True)
+        return JsonResponse(serializer.data, safe=False)
+    except Exception as e:
+        return JsonResponse({'error': True, 'errorText': e})
 
 
 # -------------------testing-----------------------
@@ -130,9 +231,12 @@ def check_proxy(request):
     if is_working_proxy(proxy, test_url):
         print(proxy.ip, "is working")
         proxy.working = True
-
+        proxy.updatedAt = datetime.now()
         proxy.save()
-        return JsonResponse({'error': False, 'working': True}, safe=False)
+        add_or_update_test_url(proxy, test_url, True)
+        testurl = TestUrls.objects.get(test_url=test_url, proxy=proxy)
+        serializer = TestUrlsSerializer(testurl)
+        return JsonResponse({'error': False, 'working': True, 'test_url': serializer.data}, safe=False)
     else:
         print("Bad Proxy", proxy.ip)
         proxy.working = False
@@ -142,104 +246,27 @@ def check_proxy(request):
 
 def is_working_proxy(proxy, url):
     try:
-
-        print('HTTP han aho test')
+        print(proxy.ip)
+        print(url)
         proxy_ip = str(proxy.ip + ':' + proxy.port)
-        print(proxy_ip, url)
 
         r = requests.get(url=url,
                          proxies={"http": proxy_ip})
-        print(r.json()['origin'])
+        print(r)
+        print(r.text)
 
         return True
     except Exception as e:
         print(proxy, 'fail', e)
         return False
 
-# ------------------------- TO BE REMOVED -
-# def is_proxy_working(pip):
-#     proxyparsed = "https://" + (pip)
-#     proxy = urllib3.ProxyManager(proxyparsed, timeout=3.0)
-#     try:
-#         r = proxy.request('GET', 'https://api.ipify.org/')
-#         print(r)
-#     except Exception:
-#         return False
-#
-#     if r.status == 200 and r.data.decode("utf-8") == pip.split(':')[0]:
-#         return True
-#
-#     else:
-#         return False
-#
-# def check_proxy_list():
-#     proxylist = []
-#     proxies = Proxy.objects.all()
-#     for proxy in proxies:
-#         # proxylist.append(proxy.ip + ':' + proxy.port)
-#         proxylist.append(proxy.ip)
-#     # test_url = 'https://ipinfo.io?token=abaf4461e138e8'
-#     test_url = 'http://httpbin.org/ip'
-#     # location()
-#     for item in proxylist:
-#         if is_bad_proxy(item, test_url):
-#             # print("Bad Proxy", item)
-#             print('')
-#         else:
-#             # print(item, "is working")
-#             print('')
 
-#     # return False
-# except Exception as e:
-#     print('Http Failed')
-#     try:
-#         proxyDict = {"https": '45.229.193.109'}
-#         print('HTTPS han aho test')
-#         r = requests.get(url=url, proxies=proxyDict)
-#
-#         print(r.json())
-#     except Exception as e:
-#         print('Error code: ', e)
-# return True
-
-#
-# def get_ip_details(ip_address=None):
-#     ipinfo_token = getattr(settings, "IPINFO_TOKEN", None)
-#     ipinfo_settings = getattr(settings, "IPINFO_SETTINGS", {})
-#     ip_data = ipinfo.getHandler(ipinfo_token, **ipinfo_settings)
-#     ip_data = ip_data.getDetails(ip_address)
-#     return ip_data
-
-# def location():
-#     ip_data = get_ip_details('202.147.207.253')
-
-# response_string = 'The IP address {} is located at the coordinates {}, which is in the city {}.'.format(
-#     ip_data.ip, ip_data.loc, ip_data.city)
-# print(response_string)
-# return HttpResponse(response_string)
-# try:
-# http = "http://10.10.1.10:1080"
-# https = "https://10.10.1.11:3128"
-# ftp = "ftp://10.10.1.10:8080"
-#
-# proxy_dict = {
-#     "http": http,
-#     "https": https,
-#     "ftp": ftp
-# }
-#
-# proxiesDict = {
-#     'http': "socks5://87.126.43.160:8080",
-#     'https': "socks5://87.126.43.160:8080"
-# }
-# r = requests.get('https://httpbin.org/ip', proxies=proxiesDict)
-# print(r.json())
-# print('aho start')
-# print(check('87.126.43.160:8080'))
-# ok, error = await check('PROXY')
-# if not ok:
-#     print(error)
-# if not ok:
-#     print(error)
-# except Exception as e:
-#     print(e)
+def add_or_update_test_url(proxy, url, working):
+    TestUrls.objects.update_or_create(
+        test_url=url,
+        defaults={
+            'proxy': proxy,
+            'working': working,
+            'checkedAt': datetime.now()
+        }
+    )

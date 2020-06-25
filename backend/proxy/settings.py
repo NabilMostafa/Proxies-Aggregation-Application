@@ -136,4 +136,7 @@ IPINFO_SETTINGS = {
         'maxsize': 128
     },
 }
-IPINFO_FILTER = lambda request: request.scheme == 'http'
+
+REST_FRAMEWORK = {
+    'DATETIME_FORMAT': "%m/%d/%Y %H:%M:%S",
+}
