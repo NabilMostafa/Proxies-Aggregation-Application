@@ -59,9 +59,10 @@ def proxy_list():
     proxy_list_download()
     proxy_11()
     proxyscrape()
+    awmproxy()
 
 
-# --------------------------------------------------------------- Requesting proxies func -----------------------------
+# ------------------------------------- Requesting proxies func -----------------------------
 
 def proxy_list_download():
     threading.Timer(1900, proxy_list_download).start()
@@ -70,16 +71,10 @@ def proxy_list_download():
 
     # -------------------------------URL USA----------------------------
     url = 'https://www.proxy-list.download/api/v1/get?type=http&country=US'
-    response = requests.get(url)
-    for ip in response.text.splitlines():
-        proxyList["data"].append(
-            {'ip': ip.split(':')[0], 'port': ip.split(':')[1]})
+
     # -------------------------------URL Germany------------------------
     url2 = 'https://www.proxy-list.download/api/v1/get?type=http&country=DE'
-    response = requests.get(url2)
-    for ip in response.text.splitlines():
-        proxyList["data"].append(
-            {'ip': ip.split(':')[0], 'port': ip.split(':')[1]})
+
     # ------------------------------- Getting time difference since last update -----------------------------------
     try:
         last_update_diff = (datetime.now() - ProxyProvider.objects.get(
@@ -89,6 +84,15 @@ def proxy_list_download():
 
     # ---------------------------------------------------------
     if last_update_diff > 10:
+        response = requests.get(url)
+        for ip in response.text.splitlines():
+            proxyList["data"].append(
+                {'ip': ip.split(':')[0], 'port': ip.split(':')[1]})
+
+        response2 = requests.get(url2)
+        for ip in response2.text.splitlines():
+            proxyList["data"].append(
+                {'ip': ip.split(':')[0], 'port': ip.split(':')[1]})
         provider = add_or_get_provider('https://www.proxy-list.download/api/v1/', 'proxy-list.download')
         try:
             provider.last_time_update = datetime.now()
@@ -100,7 +104,6 @@ def proxy_list_download():
                         'provider': provider,
                         'createdAt': datetime.now(),
                         'port': proxy['port'],
-                        'updatedAt': datetime.now(),
                         'lastFoundAt': datetime.now(),
                     }
                 )
@@ -140,7 +143,6 @@ def proxy_11():
                         'provider': provider,
                         'createdAt': datetime.strptime(proxy['createdAt'], '%a, %d %b %Y %H:%M:%S  %Z'),
                         'port': proxy['port'],
-                        # 'updatedAt': datetime.strptime(proxy['updatedAt'], '%a, %d %b %Y %H:%M:%S  %Z'),
                         'lastFoundAt': datetime.now(),
                     }
                 )
@@ -160,10 +162,6 @@ def proxyscrape():
 
     # ------------------------------- URL ----------------------------
     url = 'https://api.proxyscrape.com/?request=getproxies&proxytype=http,https&limit=250'
-    response = requests.get(url)
-    for ip in response.text.splitlines():
-        proxyList["data"].append(
-            {'ip': ip.split(':')[0], 'port': ip.split(':')[1]})
 
     # ------------------------------- Getting time difference since last update -----------------------------------
     try:
@@ -174,6 +172,11 @@ def proxyscrape():
 
     # ---------------------------------------------------------
     if last_update_diff > 10:
+        response = requests.get(url)
+        for ip in response.text.splitlines():
+            proxyList["data"].append(
+                {'ip': ip.split(':')[0], 'port': ip.split(':')[1]})
+
         provider = add_or_get_provider('https://api.proxyscrape.com/?request=getproxies', 'proxyscrape')
         try:
             provider.last_time_update = datetime.now()
@@ -185,7 +188,6 @@ def proxyscrape():
                         'provider': provider,
                         'createdAt': datetime.now(),
                         'port': proxy['port'],
-                        'updatedAt': datetime.now(),
                         'lastFoundAt': datetime.now(),
                     }
                 )
@@ -194,6 +196,54 @@ def proxyscrape():
 
         except Exception as e:
             print('Error in This list: ', e)
+
+
+def awmproxy():
+    threading.Timer(1900, awmproxy).start()
+    proxyList = {"data": []}
+
+    # ------------------------------- URL ----------------------------
+    url = 'https://awmproxy.net/freeproxy_5762d603d45c78e.txt'
+
+    # ------------------------------- Getting time difference since last update -----------------------------------
+    try:
+        last_update_diff = (datetime.now() - ProxyProvider.objects.get(
+            provider_name='awmproxy').last_time_update).seconds / 60
+    except:
+        last_update_diff = 11
+
+    # ---------------------------------------------------------
+    if last_update_diff > 10:
+        for i in range(250):
+            response = requests.get(url)
+            ip = response.text.splitlines()[i]
+            proxyList["data"].append(
+                {'ip': ip.split(':')[0], 'port': ip.split(':')[1]})
+        # add_new_proxies('https://awmproxy.net/', 'awmproxy', proxyList)
+
+
+def add_new_proxies(url, name, proxyList):
+    counter = 0
+
+    provider = add_or_get_provider(url, name)
+    try:
+        provider.last_time_update = datetime.now()
+        for proxy in proxyList['data']:
+            counter += 1
+            Proxy.objects.update_or_create(
+                ip=proxy['ip'],
+                defaults={
+                    'provider': provider,
+                    'createdAt': datetime.now(),
+                    'port': proxy['port'],
+                    'lastFoundAt': datetime.now(),
+                }
+            )
+        provider.number_of_records = counter
+        provider.save()
+
+    except Exception as e:
+        print('Error in This list: ', e)
 
 
 # ----------------------------------------------------------------------------------------------------------------

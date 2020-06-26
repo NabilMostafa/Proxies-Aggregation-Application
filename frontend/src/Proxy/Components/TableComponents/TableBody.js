@@ -53,7 +53,6 @@ class TableBody extends React.Component {
         return (
             <tbody>
             <tr key={this.props.BodyData[0]}>
-                <td>{this.props.BodyData[0]}</td>
                 <td>{this.props.BodyData[1]}</td>
                 <td>{this.props.BodyData[2]}</td>
                 <td>{this.props.BodyData[3]}</td>

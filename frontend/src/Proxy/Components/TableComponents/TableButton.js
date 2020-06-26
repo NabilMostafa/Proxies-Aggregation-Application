@@ -8,12 +8,10 @@ class TableButton extends React.Component {
         return (
             <li
                 type='button'
-                className={
-                    this.props.isActive ? 'active' : ''
-                }
+                className =  {this.props.isActive ? 'active' : ''}
                 onClick={this.handleClick}
             >
-               ( {this.props.text} )
+                {this.props.text}
             </li>
         )
     }

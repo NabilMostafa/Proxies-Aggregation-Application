@@ -14,13 +14,14 @@ class Proxy extends React.Component {
             items: [],
             allItems: [],
             currentPage: 1,
-            itemsPerPage: 25,
+            itemsPerPage: 50,
             activeIndex: 1,
             isBoxVisible: false,
             addClassCheck: false,
             providers: [],
             activeProvider: null,
             currentProvider: null,
+            allActive: true,
             render: '',
             certainProxy: false,
             dataProxyProvider: [],
@@ -46,6 +47,7 @@ class Proxy extends React.Component {
             dataProxyProvider: [],
             activeProvider: null,
             currentProvider: null,
+            allActive: true
         });
 
     }
@@ -69,9 +71,16 @@ class Proxy extends React.Component {
                         activeIndex: 1,
                         currentPage: 1,
                         certainProxy: true,
+                        allActive: false,
                         dataProxyProvider: result['providers']
                     })
-                });
+                }, (error) => {
+                    this.setState({
+                        isLoaded: true,
+                        error: error
+                    });
+                }
+            );
     }
 
 
@@ -91,7 +100,7 @@ class Proxy extends React.Component {
                 (error) => {
                     this.setState({
                         isLoaded: true,
-                        error
+                        error: error
                     });
                 }
             )
@@ -106,20 +115,18 @@ class Proxy extends React.Component {
         const currentItems = items.slice(indexOfFirstItem, indexOfLastItem);
 
         return currentItems.map((proxy, index) => {
-            const {id, ip, port, createdAt, updatedAt,lastFoundAt ,providerName} = proxy; //destructuring
+            const {id, ip, port, createdAt, updatedAt, lastFoundAt, providerName} = proxy; //destructuring
 
             return (
                 <TableBody
                     key={id}
                     BodyData={[
-                        id, ip, port,  createdAt, updatedAt, lastFoundAt,providerName
+                        id, ip, port, createdAt, updatedAt, lastFoundAt, providerName
                     ]}
                 />
             )
         })
     }
-
-
 
 
     renderProviders() {
@@ -153,9 +160,7 @@ class Proxy extends React.Component {
                         index={number}
                         text={number}
                         isActive={this.state.activeIndex === number}
-                    >
-                        {number}
-                    </TableButton>
+                    />
                 </div>
             );
         });
@@ -172,7 +177,7 @@ class Proxy extends React.Component {
         } else {
             return (
                 <div className="row content justify-content-md-center">
-                    <div className="col-sm-9 text-left h5">
+                    <div className="col-sm-10 text-left h5">
                         <h1 id='tableTitle'>Proxy Table</h1>
                         <ul id='provider-list'>
                             {this.state.ShowTestUrls === false ?
@@ -194,20 +199,27 @@ class Proxy extends React.Component {
                                 ''
                             }
                         </ul>
-                        <ul id='provider-list'>
-                            Providers List :
-                            {this.state.activeProvider !== null ?
-                                <TableButton
-                                    key={Math.random()}
-                                    onClick={this.handleTableResetClick}
-                                    text={'Show All'}
-                                /> : ''
-                            }
+                        <ul id='provider-list' className='provider-ul'>
+                            <span>Providers List : </span>
+                            {/*{this.state.activeProvider !== null ?*/}
+                            {/*    <TableButton*/}
+                            {/*        key={Math.random()}*/}
+                            {/*        onClick={this.handleTableResetClick}*/}
+                            {/*        text={'Show All Proxies'}*/}
+                            {/*    /> : ''*/}
+                            {/*}*/}
+                            <TableButton
+                                key={Math.random()}
+                                onClick={this.handleTableResetClick}
+                                text={'Show All Proxies'}
+                                isActive={this.state.allActive}
+                            />
                             {this.renderProviders()}
                         </ul>
                         {this.state.certainProxy ?
                             <ProviderDataTable
                                 data={this.state.dataProxyProvider}
+                                error={this.state.error}
                             /> :
                             null
                         }
@@ -216,7 +228,7 @@ class Proxy extends React.Component {
                             <table className="table table-striped table-bordered table-sm">
                                 <TableHeader
                                     headers={[
-                                        'ID', 'IP', 'Port',
+                                        'IP', 'Port',
                                         'CreatedAt',
                                         'Last successful functionality test date',
                                         'Last Found At',

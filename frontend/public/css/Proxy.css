@@ -50,9 +50,24 @@ footer {
     color: #888;
     margin-left: 0.5rem;
     margin-right: 0.5rem;
+
+}
+
+.provider-ul li {
+    color: white !important;
+    background-color: #888888;
+    padding: 5px 10px;
+    border-radius: 15px;
+}
+
+.provider-ul li.active {
+    color: white !important;
+    background-color: #005cbf;
 }
 
 #provider-list li.active {
     color: #005cbf;
     text-decoration: underline;
 }
+
+
