@@ -1,22 +1,10 @@
-import os
-
-import ipinfo
 import requests
 import json
-from django.shortcuts import render
-from django.http import HttpResponse, JsonResponse
+from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
-from rest_framework.parsers import JSONParser
-
-from proxy import settings
-from proxy_api.models import *
 from proxy_api.serializers import *
-import time
 import threading
-from datetime import datetime, timedelta
-from pytz import utc
-import urllib.request as urllib
-import urllib3
+from datetime import datetime
 
 
 # Create your views here.
@@ -25,7 +13,6 @@ import urllib3
 def proxies_list(request):
     if request.method == 'GET':
         proxy_list()
-
         proxies = Proxy.objects.all().order_by('-id')
         for proxy in proxies:
             try:
@@ -56,11 +43,9 @@ def provider_list(request, id):
 
 
 def proxy_list():
-    # check_proxy_list()
     proxy_list_download()
     proxy_11()
     proxyscrape()
-    # awmproxy()
     byteproxies()
     proxyscan()
 
@@ -70,7 +55,10 @@ def proxy_list():
 def proxy_list_download():
     threading.Timer(1900, proxy_list_download).start()
     proxyList = {"data": []}
-
+    provider_desc = "This provider returns a proxy list in Text format, Data was extracted" \
+                    " by splitting the lines on that text and " \
+                    "storing the ip address and port in a dictionary that will be used while saving " \
+                    "data in the database"
     # -------------------------------URL USA----------------------------
     url = 'https://www.proxy-list.download/api/v1/get?type=http&country=US'
 
@@ -96,7 +84,7 @@ def proxy_list_download():
             proxyList["data"].append(
                 {'ip': ip.split(':')[0], 'port': ip.split(':')[1]})
 
-        add_new_proxies('https://www.proxy-list.download/api/v1/', 'proxy-list.download', proxyList)
+        add_new_proxies('https://www.proxy-list.download/api/v1/', 'proxy-list.download', proxyList, provider_desc)
 
 
 def proxy_11():
@@ -106,6 +94,8 @@ def proxy_11():
     data = {
         'key': 'MTI2Mw.XswYVw.w4tBzZRqNF1zS8fdW4PFNE9pmG4',
     }
+    provider_desc = "This provider returns a proxy list in Json format that will be used while saving " \
+                    "data in the database"
     # ------------------------------ Getting time difference since last update --------------------
     try:
         last_update_diff = (datetime.now() - ProxyProvider.objects.get(provider_name=name,
@@ -116,7 +106,7 @@ def proxy_11():
     if last_update_diff > 10:
         response = requests.get(url, data)
         answer = json.loads(response.text)
-        add_new_proxies(url, name, answer)
+        add_new_proxies(url, name, answer, provider_desc)
 
 
 def proxyscan():
@@ -125,7 +115,8 @@ def proxyscan():
     name = 'proxyscan'
     proxyList = {"data": []}
     counter = 0
-
+    provider_desc = "This provider returns a proxy list in Json format that will be used while saving " \
+                    "data in the database"
     # ------------------------------ Getting time difference since last update --------------------
     try:
         last_update_diff = (datetime.now() - ProxyProvider.objects.get(provider_name=name,
@@ -142,7 +133,7 @@ def proxyscan():
                 counter += 1
                 proxyList["data"].append(
                     {'ip': ip['Ip'], 'port': ip['Port']})
-        add_new_proxies('https://www.proxyscan.io/api/proxy', name, proxyList)
+        add_new_proxies('https://www.proxyscan.io/api/proxy', name, proxyList, provider_desc)
 
 
 def byteproxies():
@@ -150,7 +141,8 @@ def byteproxies():
     url = 'https://byteproxies.com/api.php?key=free&amount=100&type=http&anonymity=all'
     name = 'byteproxies'
     proxyList = {"data": []}
-
+    provider_desc = "This provider returns a proxy list in Json format that will be used while saving " \
+                    "data in the database"
     # ------------------------------ Getting time difference since last update --------------------
     try:
         last_update_diff = (datetime.now() - ProxyProvider.objects.get(provider_name=name,
@@ -165,12 +157,16 @@ def byteproxies():
         for ip in answer:
             proxyList["data"].append(
                 {'ip': ip['response']['ip'], 'port': ip['response']['port']})
-        add_new_proxies("https://byteproxies.com/api.php", name, proxyList)
+        add_new_proxies("https://byteproxies.com/api.php", name, proxyList, provider_desc)
 
 
 def proxyscrape():
     threading.Timer(1900, proxyscrape).start()
     proxyList = {"data": []}
+    provider_desc = "This provider returns a proxy list in Text format, Data was extracted" \
+                    " by splitting the lines on that text and " \
+                    "storing the ip address and port in a dictionary that will be used while saving " \
+                    "data in the database"
 
     # ------------------------------- URL ----------------------------
     url = 'https://api.proxyscrape.com/?request=getproxies&proxytype=http,https&limit=250'
@@ -189,37 +185,13 @@ def proxyscrape():
             proxyList["data"].append(
                 {'ip': ip.split(':')[0], 'port': ip.split(':')[1]})
 
-        add_new_proxies('https://api.proxyscrape.com/?request=getproxies', 'proxyscrape', proxyList)
+        add_new_proxies('https://api.proxyscrape.com/?request=getproxies', 'proxyscrape', proxyList, provider_desc)
 
 
-def awmproxy():
-    threading.Timer(1900, awmproxy).start()
-    proxyList = {"data": []}
-
-    # ------------------------------- URL ----------------------------
-    url = 'https://awmproxy.net/freeproxy_5762d603d45c78e.txt'
-
-    # ------------------------------- Getting time difference since last update -----------------------------------
-    try:
-        last_update_diff = (datetime.now() - ProxyProvider.objects.get(
-            provider_name='awmproxy').last_time_update).seconds / 60
-    except:
-        last_update_diff = 11
-
-    # ---------------------------------------------------------
-    if last_update_diff > 10:
-        response = requests.get(url)
-        for i in range(100):
-            ip = response.text.splitlines()[i]
-            proxyList["data"].append(
-                {'ip': ip.split(':')[0], 'port': ip.split(':')[1]})
-        add_new_proxies('https://awmproxy.net/', 'awmproxy', proxyList)
-
-
-def add_new_proxies(url, name, proxyList):
+def add_new_proxies(url, name, proxyList, provider_desc):
     counter = 0
 
-    provider = add_or_get_provider(url, name)
+    provider = add_or_get_provider(url, name, provider_desc)
     try:
         provider.last_time_update = datetime.now()
         for proxy in proxyList['data']:
@@ -241,7 +213,7 @@ def add_new_proxies(url, name, proxyList):
 
 
 # ----------------------------------------------------------------------------------------------------------------
-def add_or_get_provider(url, name):
+def add_or_get_provider(url, name, provider_desc):
     try:
         provider = ProxyProvider.objects.get(provider_url=url)
         provider.save()
@@ -250,6 +222,7 @@ def add_or_get_provider(url, name):
         provider = ProxyProvider()
         provider.provider_url = url
         provider.provider_name = name
+        provider.provider_details = provider_desc
         provider.last_time_update = datetime.now()
         provider.save()
     return provider

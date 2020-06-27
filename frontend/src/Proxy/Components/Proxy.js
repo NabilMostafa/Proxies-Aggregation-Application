@@ -32,6 +32,7 @@ class Proxy extends React.Component {
         this.handleProviderClick = this.handleProviderClick.bind(this);
         this.handleTestUrlsTableClick = this.handleTestUrlsTableClick.bind(this);
         this.handleTableResetClick = this.handleTableResetClick.bind(this);
+        this.handleUpdateProxyTableClick = this.handleUpdateProxyTableClick.bind(this);
     }
 
     handleTestUrlsTableClick(event) {
@@ -83,6 +84,13 @@ class Proxy extends React.Component {
             );
     }
 
+    handleUpdateProxyTableClick() {
+        this.setState({
+            isLoaded: false,
+        });
+        this.componentDidMount()
+
+    }
 
     componentDidMount() {
         fetch(`http://127.0.0.1:8000/api/proxies/`)
@@ -152,14 +160,14 @@ class Proxy extends React.Component {
         }
         return pageNumbers.map(number => {
             return (
-                    <TableButton
-                        key={number}
-                        id={number}
-                        onClick={this.handlePageClick}
-                        index={number}
-                        text={number}
-                        isActive={this.state.activeIndex === number}
-                    />
+                <TableButton
+                    key={number}
+                    id={number}
+                    onClick={this.handlePageClick}
+                    index={number}
+                    text={number}
+                    isActive={this.state.activeIndex === number}
+                />
             );
         });
 
@@ -177,7 +185,7 @@ class Proxy extends React.Component {
                 <div className="row content justify-content-md-center">
                     <div className="col-sm-9 text-left h5">
                         <h1 id='tableTitle'>Proxy Table</h1>
-                        <ul id='provider-list'>
+                        <ul id='provider-list' className='provider-ul'>
                             {this.state.ShowTestUrls === false ?
                                 <TableButton
                                     key={Math.random()}
@@ -190,6 +198,11 @@ class Proxy extends React.Component {
                                 />
                             }
 
+                            <TableButton
+                                key={Math.random()}
+                                onClick={this.handleUpdateProxyTableClick}
+                                text={'Update proxies Table'}
+                            />
                         </ul>
                         <ul>
                             {this.state.ShowTestUrls ?

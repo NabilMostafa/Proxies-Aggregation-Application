@@ -1,5 +1,4 @@
 import React from "react";
-import {Link} from "react-router-dom";
 
 const NavBar = () => {
     return (
@@ -7,7 +6,7 @@ const NavBar = () => {
             <div className="container-fluid">
                 <div className="navbar-header h3">
                     <ul className="nav-item">
-                        <Link className="nav-link js-scroll-trigger" to="/">Proxy Application</Link>
+                        <p className="nav-link js-scroll-trigger">Proxy Application</p>
                     </ul>
                 </div>
             </div>

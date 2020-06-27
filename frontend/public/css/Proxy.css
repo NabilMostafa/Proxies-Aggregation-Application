@@ -4,7 +4,6 @@
 }
 
 #page-numbers {
-
     list-style-type: none;
     display: flex;
     justify-content: center;
@@ -30,9 +29,10 @@ footer {
     display: flex;
     justify-content: center;
     margin: auto;
-    background-color: #555;
-    color: white;
+    background-color: #f8f8f8;
+    color: black;
     padding: 15px;
+    font-size: 13.5px;
 }
 
 #tableTitle {

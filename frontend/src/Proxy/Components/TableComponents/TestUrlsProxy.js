@@ -7,6 +7,7 @@ class TestUrlsProxy extends React.Component {
             data: [],
             isLoaded: false,
             error: null,
+            customUrlMessage:null,
             currentlyChecking: false,
             url1CheckedAt: this.props.data[0] ? this.props.data[0].checkedAt : null,
             url2CheckedAt: this.props.data[1] ? this.props.data[1].checkedAt : null,
@@ -26,13 +27,10 @@ class TestUrlsProxy extends React.Component {
     }
 
     reCheckCustomUrl(url) {
-
-
         if (url.includes('http')) {
-            console.log('hna aho')
             this.setState({
                 currentlyChecking: true,
-                error: null
+                customUrlMessage: null
             });
             let id = this.props.id;
             fetch(`http://127.0.0.1:8000/api/check/`, {
@@ -44,7 +42,15 @@ class TestUrlsProxy extends React.Component {
                 )
             }).then(response => response.json())
                 .then((result) => {
-
+                    if (result['working']){
+                        this.setState({
+                            customUrlMessage:'200 Ok! Success'
+                        })
+                    } else{
+                        this.setState({
+                            customUrlMessage:'Not working, Error was returned'
+                        })
+                    }
                         this.setState({
                             data: result,
                             isLoaded: true,
@@ -55,12 +61,12 @@ class TestUrlsProxy extends React.Component {
                     (error) => {
                         this.setState({
                             isLoaded: true,
-                            error: error
+                            customUrlMessage: error
                         });
                     })
         } else {
             this.setState({
-                error: 'You must include http or https in url (scheme: http://address)'
+                customUrlMessage: 'You must include http or https in url (scheme: http://address)'
             });
         }
 
@@ -191,8 +197,8 @@ class TestUrlsProxy extends React.Component {
                         </td>
                         <td>
                             <input value={this.state.inputUrl} onChange={this.updateInputUrl}/>
-                            {this.state.error != null ? <li>
-                                {this.state.error}
+                            {this.state.customUrlMessage != null ? <li>
+                                {this.state.customUrlMessage}
                             </li> : null}
                         </td>
                         <td>

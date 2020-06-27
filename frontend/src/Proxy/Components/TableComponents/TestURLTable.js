@@ -5,7 +5,7 @@ class TestURLTable extends React.Component {
     render() {
         return (
             <div className="table-responsive-sm">
-                Data about Test URLs:
+                <span>Data about Test URLs:</span>
                 <table className="table table-striped table-bordered table-sm">
                     <tbody>
                     <tr>
@@ -17,7 +17,9 @@ class TestURLTable extends React.Component {
                             httpbin.org/ip
                         </td>
                         <td>
-                            1desc
+                            This url returns Response [200] and Json object with the proxy ip if the request with proxy
+                            worked, else it returns error and the
+                            request fails.
                         </td>
                     </tr>
                     <tr>
@@ -25,7 +27,8 @@ class TestURLTable extends React.Component {
                             ip8.com/ip
                         </td>
                         <td>
-                            2desc
+                            This url returns 200 success and the proxy ip address as text if the request with proxy
+                            worked, else if the request fails it returns error.
                         </td>
                     </tr>
                     <tr>
@@ -33,7 +36,8 @@ class TestURLTable extends React.Component {
                             api.ipify.org
                         </td>
                         <td>
-                            3desc
+                            This url returns 200 success and the proxy ip address as text if the request with proxy
+                            worked, else if the request fails it returns error.
                         </td>
                     </tr>
                     </tbody>

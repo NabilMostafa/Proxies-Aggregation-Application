@@ -36,7 +36,6 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'corsheaders',
-
     'rest_framework',
     'proxy_api',
 
@@ -52,7 +51,6 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
-    'ipinfo_django.middleware.IPinfo',
 
 ]
 
@@ -129,13 +127,6 @@ CORS_ORIGIN_ALLOW_ALL = True
 
 STATIC_URL = '/static/'
 
-IPINFO_TOKEN = 'abaf4461e138e8'
-IPINFO_SETTINGS = {
-    'cache_options': {
-        'ttl': 30,
-        'maxsize': 128
-    },
-}
 
 REST_FRAMEWORK = {
     'DATETIME_FORMAT': "%m/%d/%Y %H:%M",
