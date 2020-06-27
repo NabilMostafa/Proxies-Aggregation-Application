@@ -152,7 +152,6 @@ class Proxy extends React.Component {
         }
         return pageNumbers.map(number => {
             return (
-                <div key={number}>
                     <TableButton
                         key={number}
                         id={number}
@@ -161,7 +160,6 @@ class Proxy extends React.Component {
                         text={number}
                         isActive={this.state.activeIndex === number}
                     />
-                </div>
             );
         });
 
@@ -177,7 +175,7 @@ class Proxy extends React.Component {
         } else {
             return (
                 <div className="row content justify-content-md-center">
-                    <div className="col-sm-10 text-left h5">
+                    <div className="col-sm-9 text-left h5">
                         <h1 id='tableTitle'>Proxy Table</h1>
                         <ul id='provider-list'>
                             {this.state.ShowTestUrls === false ?
@@ -199,15 +197,9 @@ class Proxy extends React.Component {
                                 ''
                             }
                         </ul>
+                        <span className='prov-header'>Providers List : </span>
                         <ul id='provider-list' className='provider-ul'>
-                            <span>Providers List : </span>
-                            {/*{this.state.activeProvider !== null ?*/}
-                            {/*    <TableButton*/}
-                            {/*        key={Math.random()}*/}
-                            {/*        onClick={this.handleTableResetClick}*/}
-                            {/*        text={'Show All Proxies'}*/}
-                            {/*    /> : ''*/}
-                            {/*}*/}
+
                             <TableButton
                                 key={Math.random()}
                                 onClick={this.handleTableResetClick}

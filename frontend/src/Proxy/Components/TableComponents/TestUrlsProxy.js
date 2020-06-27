@@ -10,9 +10,60 @@ class TestUrlsProxy extends React.Component {
             currentlyChecking: false,
             url1CheckedAt: this.props.data[0] ? this.props.data[0].checkedAt : null,
             url2CheckedAt: this.props.data[1] ? this.props.data[1].checkedAt : null,
-            url3CheckedAt: this.props.data[2] ? this.props.data[2].checkedAt : null
+            url3CheckedAt: this.props.data[2] ? this.props.data[2].checkedAt : null,
+            inputUrl: ''
+
 
         };
+        this.updateInputUrl = this.updateInputUrl.bind(this);
+
+    }
+
+    updateInputUrl(event) {
+        this.setState({
+            inputUrl: event.target.value
+        });
+    }
+
+    reCheckCustomUrl(url) {
+
+
+        if (url.includes('http')) {
+            console.log('hna aho')
+            this.setState({
+                currentlyChecking: true,
+                error: null
+            });
+            let id = this.props.id;
+            fetch(`http://127.0.0.1:8000/api/check/`, {
+                method: 'PUT',
+                body: JSON.stringify({
+                        'id': id,
+                        'test_url': url
+                    }
+                )
+            }).then(response => response.json())
+                .then((result) => {
+
+                        this.setState({
+                            data: result,
+                            isLoaded: true,
+                            currentlyChecking: false,
+                        });
+
+                    },
+                    (error) => {
+                        this.setState({
+                            isLoaded: true,
+                            error: error
+                        });
+                    })
+        } else {
+            this.setState({
+                error: 'You must include http or https in url (scheme: http://address)'
+            });
+        }
+
     }
 
     reCheckProxy(url, urlnum) {
@@ -127,6 +178,27 @@ class TestUrlsProxy extends React.Component {
                             {!this.state.currentlyChecking ?
                                 <button onClick={(event) => {
                                     this.reCheckProxy('http://api.ipify.org', 3)
+                                }} type="button"
+                                        className="btn btn-primary">Re-Check
+                                </button> :
+                                <p>Checking in progress</p>
+                            }
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            Test Against Certain URL:
+                        </td>
+                        <td>
+                            <input value={this.state.inputUrl} onChange={this.updateInputUrl}/>
+                            {this.state.error != null ? <li>
+                                {this.state.error}
+                            </li> : null}
+                        </td>
+                        <td>
+                            {!this.state.currentlyChecking ?
+                                <button onClick={(event) => {
+                                    this.reCheckCustomUrl(this.state.inputUrl)
                                 }} type="button"
                                         className="btn btn-primary">Re-Check
                                 </button> :

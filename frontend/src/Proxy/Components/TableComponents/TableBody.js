@@ -10,7 +10,7 @@ class TableBody extends React.Component {
             ShowTestUrls: false,
             data: [],
             error: null,
-            lastCheckedAt: this.props.BodyData[6]
+            lastCheckedAt: this.props.BodyData[4]
 
         };
         this.handleTestUrlsTableClick = this.handleTestUrlsTableClick.bind(this);
@@ -32,7 +32,6 @@ class TableBody extends React.Component {
             )
         }).then(response => response.json())
             .then((result) => {
-                    console.log(result)
                     this.setState({
                         data: result,
                         ShowTestUrls: !this.state.ShowTestUrls,
@@ -56,23 +55,10 @@ class TableBody extends React.Component {
                 <td>{this.props.BodyData[1]}</td>
                 <td>{this.props.BodyData[2]}</td>
                 <td>{this.props.BodyData[3]}</td>
-                <td>{this.props.BodyData[4] === null ? 'Not yet tested' : this.props.BodyData[4]}</td>
+                <td>{this.state.lastCheckedAt === null ? 'Not yet tested' : this.state.lastCheckedAt}</td>
                 <td>{this.props.BodyData[5]}</td>
-                <td>{this.state.lastCheckedAt}</td>
-                {/*<td>*/}
-                {/*    {working ?*/}
-                {/*        <span>*/}
-                {/*            <i id={'i-t' + id} className={'fas fa-check'} style={{display: "block"}}/>*/}
-                {/*            <i id={'i-f' + id} className={'fas fa-times'} style={{display: "none"}}/>*/}
-                {/*            </span>*/}
-                {/*        :*/}
-                {/*        <span>*/}
-                {/*            <i id={'i-t' + id} className={'fas fa-check'} style={{display: "none"}}/>*/}
-                {/*            <i id={'i-f' + id} className={'fas fa-times'} style={{display: "block"}}/>*/}
-                {/*            </span>*/}
-
-                {/*    }</td>*/}
-                <td>
+                <td>{this.props.BodyData[6]}</td>
+                <td id='show_test_button'>
                     {this.state.ShowTestUrls === false ?
                         <TableButton
                             key={Math.random()}

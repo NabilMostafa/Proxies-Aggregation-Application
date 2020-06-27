@@ -25,6 +25,7 @@ import urllib3
 def proxies_list(request):
     if request.method == 'GET':
         proxy_list()
+
         proxies = Proxy.objects.all().order_by('-id')
         for proxy in proxies:
             try:
@@ -59,7 +60,9 @@ def proxy_list():
     proxy_list_download()
     proxy_11()
     proxyscrape()
-    awmproxy()
+    # awmproxy()
+    byteproxies()
+    proxyscan()
 
 
 # ------------------------------------- Requesting proxies func -----------------------------
@@ -67,7 +70,6 @@ def proxy_list():
 def proxy_list_download():
     threading.Timer(1900, proxy_list_download).start()
     proxyList = {"data": []}
-    counter = 0
 
     # -------------------------------URL USA----------------------------
     url = 'https://www.proxy-list.download/api/v1/get?type=http&country=US'
@@ -93,32 +95,14 @@ def proxy_list_download():
         for ip in response2.text.splitlines():
             proxyList["data"].append(
                 {'ip': ip.split(':')[0], 'port': ip.split(':')[1]})
-        provider = add_or_get_provider('https://www.proxy-list.download/api/v1/', 'proxy-list.download')
-        try:
-            provider.last_time_update = datetime.now()
-            for proxy in proxyList['data']:
-                counter += 1
-                Proxy.objects.update_or_create(
-                    ip=proxy['ip'],
-                    defaults={
-                        'provider': provider,
-                        'createdAt': datetime.now(),
-                        'port': proxy['port'],
-                        'lastFoundAt': datetime.now(),
-                    }
-                )
-            provider.number_of_records = counter
-            provider.save()
 
-        except Exception as e:
-            print('Error in This list: ', e)
+        add_new_proxies('https://www.proxy-list.download/api/v1/', 'proxy-list.download', proxyList)
 
 
 def proxy_11():
     threading.Timer(1900, proxy_11).start()
     url = 'https://proxy11.com/api/proxy.json'
     name = 'proxy11'
-    counter = 0
     data = {
         'key': 'MTI2Mw.XswYVw.w4tBzZRqNF1zS8fdW4PFNE9pmG4',
     }
@@ -130,35 +114,63 @@ def proxy_11():
         last_update_diff = 11
     # --------------------------------------------------------------------------------------------
     if last_update_diff > 10:
-        provider = add_or_get_provider(url, name)
         response = requests.get(url, data)
         answer = json.loads(response.text)
-        try:
-            provider.last_time_update = datetime.now()
-            for proxy in answer['data']:
+        add_new_proxies(url, name, answer)
+
+
+def proxyscan():
+    threading.Timer(1900, proxy_11).start()
+    url = 'https://www.proxyscan.io/api/proxy?limit=100&type=http,https'
+    name = 'proxyscan'
+    proxyList = {"data": []}
+    counter = 0
+
+    # ------------------------------ Getting time difference since last update --------------------
+    try:
+        last_update_diff = (datetime.now() - ProxyProvider.objects.get(provider_name=name,
+                                                                       provider_url='https://www.proxyscan.io/api/proxy')
+                            .last_time_update).seconds / 60
+    except:
+        last_update_diff = 11
+    # --------------------------------------------------------------------------------------------
+    if last_update_diff > 10:
+        while counter <= 75:
+            response = requests.get(url)
+            answer = json.loads(response.text)
+            for ip in answer:
                 counter += 1
-                Proxy.objects.update_or_create(
-                    ip=proxy['ip'],
-                    defaults={
-                        'provider': provider,
-                        'createdAt': datetime.strptime(proxy['createdAt'], '%a, %d %b %Y %H:%M:%S  %Z'),
-                        'port': proxy['port'],
-                        'lastFoundAt': datetime.now(),
-                    }
-                )
-            provider.number_of_records = counter
-            provider.save()
+                proxyList["data"].append(
+                    {'ip': ip['Ip'], 'port': ip['Port']})
+        add_new_proxies('https://www.proxyscan.io/api/proxy', name, proxyList)
 
-        except Exception as e:
-            print('Error in This list: ', e)
 
-        return answer
+def byteproxies():
+    threading.Timer(1900, byteproxies).start()
+    url = 'https://byteproxies.com/api.php?key=free&amount=100&type=http&anonymity=all'
+    name = 'byteproxies'
+    proxyList = {"data": []}
+
+    # ------------------------------ Getting time difference since last update --------------------
+    try:
+        last_update_diff = (datetime.now() - ProxyProvider.objects.get(provider_name=name,
+                                                                       provider_url="https://byteproxies.com/api.php")
+                            .last_time_update).seconds / 60
+    except:
+        last_update_diff = 11
+    # --------------------------------------------------------------------------------------------
+    if last_update_diff > 10:
+        response = requests.get(url)
+        answer = json.loads(response.text)
+        for ip in answer:
+            proxyList["data"].append(
+                {'ip': ip['response']['ip'], 'port': ip['response']['port']})
+        add_new_proxies("https://byteproxies.com/api.php", name, proxyList)
 
 
 def proxyscrape():
     threading.Timer(1900, proxyscrape).start()
     proxyList = {"data": []}
-    counter = 0
 
     # ------------------------------- URL ----------------------------
     url = 'https://api.proxyscrape.com/?request=getproxies&proxytype=http,https&limit=250'
@@ -177,25 +189,7 @@ def proxyscrape():
             proxyList["data"].append(
                 {'ip': ip.split(':')[0], 'port': ip.split(':')[1]})
 
-        provider = add_or_get_provider('https://api.proxyscrape.com/?request=getproxies', 'proxyscrape')
-        try:
-            provider.last_time_update = datetime.now()
-            for proxy in proxyList['data']:
-                counter += 1
-                Proxy.objects.update_or_create(
-                    ip=proxy['ip'],
-                    defaults={
-                        'provider': provider,
-                        'createdAt': datetime.now(),
-                        'port': proxy['port'],
-                        'lastFoundAt': datetime.now(),
-                    }
-                )
-            provider.number_of_records = counter
-            provider.save()
-
-        except Exception as e:
-            print('Error in This list: ', e)
+        add_new_proxies('https://api.proxyscrape.com/?request=getproxies', 'proxyscrape', proxyList)
 
 
 def awmproxy():
@@ -214,12 +208,12 @@ def awmproxy():
 
     # ---------------------------------------------------------
     if last_update_diff > 10:
-        for i in range(250):
-            response = requests.get(url)
+        response = requests.get(url)
+        for i in range(100):
             ip = response.text.splitlines()[i]
             proxyList["data"].append(
                 {'ip': ip.split(':')[0], 'port': ip.split(':')[1]})
-        # add_new_proxies('https://awmproxy.net/', 'awmproxy', proxyList)
+        add_new_proxies('https://awmproxy.net/', 'awmproxy', proxyList)
 
 
 def add_new_proxies(url, name, proxyList):

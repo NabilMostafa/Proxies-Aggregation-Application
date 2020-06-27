@@ -9,7 +9,9 @@
     display: flex;
     justify-content: center;
     margin: auto;
-
+    width: 100%;
+    padding: 0;
+    flex-wrap: wrap;
 }
 
 #page-numbers li {
@@ -37,13 +39,24 @@ footer {
     text-align: center;
 }
 
-#provider-list {
+.prov-header {
+    text-align: center;
+    display: block;
+    margin-bottom: 15px;
+}
 
+#provider-list {
+    padding: 0;
     list-style-type: none;
     display: flex;
     justify-content: center;
     margin: auto;
+    margin-bottom: 15px;
+}
 
+#show_test_button li {
+    color: #005cbf;
+    text-decoration: underline;
 }
 
 #provider-list li {
@@ -67,7 +80,6 @@ footer {
 
 #provider-list li.active {
     color: #005cbf;
-    text-decoration: underline;
 }
 
 

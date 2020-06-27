@@ -138,5 +138,5 @@ IPINFO_SETTINGS = {
 }
 
 REST_FRAMEWORK = {
-    'DATETIME_FORMAT': "%m/%d/%Y %H:%M:%S",
+    'DATETIME_FORMAT': "%m/%d/%Y %H:%M",
 }
