@@ -87,7 +87,6 @@ class TestUrlsProxy extends React.Component {
             )
         }).then(response => response.json())
             .then((result) => {
-                    console.log(result);
                     if (urlnum === 1 && result['test_url']) {
                         this.setState({url1CheckedAt: result['test_url'].checkedAt});
                         this.props.changeLastDate(result['test_url'].checkedAt)
