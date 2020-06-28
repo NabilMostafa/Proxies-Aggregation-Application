@@ -105,18 +105,7 @@ class TestUrlsProxy extends React.Component {
                         isLoaded: true,
                         currentlyChecking: false,
                     });
-                    // let elementFalse = document.getElementById('i-f' + id);
-                    // let elementTrue = document.getElementById('i-t' + id);
-                    //
-                    // if (result['working']) {
-                    //     elementFalse.style.display = (elementFalse.style.display = 'none');
-                    //     elementTrue.style.display = (elementTrue.style.display = 'block');
-                    //
-                    // } else {
-                    //     elementFalse.style.display = (elementFalse.style.display = 'block');
-                    //     elementTrue.style.display = (elementTrue.style.display = 'none');
-                    //
-                    // }
+
                 },
                 (error) => {
                     this.setState({

@@ -43,11 +43,26 @@ def provider_list(request, id):
 
 
 def proxy_list():
-    proxy_list_download()
-    proxy_11()
-    proxyscrape()
-    byteproxies()
-    proxyscan()
+    try:
+        proxy_list_download()
+    except:
+        pass
+    try:
+        proxy_11()
+    except:
+        pass
+    try:
+        proxyscrape()
+    except:
+        pass
+    try:
+        byteproxies()
+    except:
+        pass
+    try:
+        proxyscan()
+    except:
+        pass
 
 
 # ------------------------------------- Requesting proxies func -----------------------------
